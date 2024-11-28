@@ -4,22 +4,24 @@ import { useGetProdutosQuery } from '../services/api'
 
 import * as S from './styles'
 
-type Props = {
-  favoritos: ProdutoType[]
-  favoritar: (produto: ProdutoType) => void
-}
+import { useSelector, useDispatch } from 'react-redux'
+import { favoritar } from '../store/reducers/carrinho'
+import { RootReducer } from '../store'
 
-const ProdutosComponent = ({ favoritos, favoritar }: Props) => {
+const ProdutosComponent = () => {
   const { data: produtos, isLoading } = useGetProdutosQuery()
-
+  const favoritos = useSelector((state: RootReducer) => state.app.favoritos)
+  const dispatch = useDispatch()
   if (isLoading) return <h2>Carregando...</h2>
 
   const produtoEstaNosFavoritos = (produto: ProdutoType) => {
-    const produtoId = produto.id
-    const IdsDosFavoritos = favoritos.map((f) => f.id)
-
-    return IdsDosFavoritos.includes(produtoId)
+    return favoritos.some((favorito) => favorito.id === produto.id)
   }
+
+  const handleFavoritar = (produto: ProdutoType) => {
+    dispatch(favoritar(produto))
+  }
+
   return (
     <>
       <S.Produtos>
@@ -28,7 +30,7 @@ const ProdutosComponent = ({ favoritos, favoritar }: Props) => {
             estaNosFavoritos={produtoEstaNosFavoritos(produto)}
             key={produto.id}
             produto={produto}
-            favoritar={favoritar}
+            favoritar={handleFavoritar}
           />
         ))}
       </S.Produtos>
